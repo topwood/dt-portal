@@ -6,8 +6,10 @@ import {
 	Button,
 	Stack,
 	Divider,
+	CircularProgress,
 } from "@mui/material";
 import { useFormik } from "formik";
+import { useRouter } from "next/navigation";
 import * as yup from "yup";
 import Link from "next/link";
 import { loginType } from "@/app/(DashboardLayout)/types/auth/auth";
@@ -15,7 +17,8 @@ import CustomCheckbox from "@/app/(DashboardLayout)/components/forms/theme-eleme
 import CustomTextField from "@/app/(DashboardLayout)/components/forms/theme-elements/CustomTextField";
 import CustomFormLabel from "@/app/(DashboardLayout)/components/forms/theme-elements/CustomFormLabel";
 import AuthSocialButtons from "./AuthSocialButtons";
-import { login } from "../api";
+import { getInfo, login } from "../api";
+import { useState } from "react";
 
 const validationSchema = yup.object({
 	email: yup
@@ -29,6 +32,10 @@ const validationSchema = yup.object({
 });
 
 const AuthLogin = ({ title, subtitle, subtext }: loginType) => {
+	const [loading, setLoading] = useState(false);
+
+	const router = useRouter();
+
 	const formik = useFormik({
 		initialValues: {
 			email: "",
@@ -36,10 +43,17 @@ const AuthLogin = ({ title, subtitle, subtext }: loginType) => {
 		},
 		validationSchema: validationSchema,
 		onSubmit: (values) => {
+			setLoading(true);
 			login({
 				username: values.email,
 				password: values.password,
-			});
+			})
+				.then((res) => {
+					router.push("/");
+				})
+				.finally(() => {
+					setLoading(false);
+				});
 		},
 	});
 
@@ -130,7 +144,7 @@ const AuthLogin = ({ title, subtitle, subtext }: loginType) => {
 					// href="/"
 					type="submit"
 				>
-					Sign In
+					{loading ? <CircularProgress color="inherit" size={24} /> : "Sign In"}
 				</Button>
 			</Box>
 			{subtitle}

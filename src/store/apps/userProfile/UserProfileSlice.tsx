@@ -1,111 +1,148 @@
-import axios from '../../../utils/axios';
-import { createSlice } from '@reduxjs/toolkit';
-import { map } from 'lodash';
-import { AppDispatch } from '../../store';
+import axios from "../../../utils/axios";
+import { createSlice } from "@reduxjs/toolkit";
+import { map } from "lodash";
+import { AppDispatch } from "../../store";
 
-const API_URL = '/api/data/postData';
+const API_URL = "/api/data/postData";
+
+export interface UserInfo {
+	inviteCode: number;
+	name: string;
+	token: string;
+	username: string;
+	vip: number;
+	vipEndTime: number;
+	wallet: string;
+	walletMonitorQuota: number;
+	walletMonitorUsage: number;
+}
 
 interface StateType {
-  posts: any[];
-  followers: any[];
-  gallery: any[];
+	posts: any[];
+	followers: any[];
+	gallery: any[];
+	userInfo: UserInfo;
 }
 
 const initialState = {
-  posts: [],
-  followers: [],
-  gallery: [],
+	posts: [],
+	followers: [],
+	gallery: [],
+	userInfo: {} as UserInfo,
 };
 
 export const UserProfileSlice = createSlice({
-  name: 'UserPost',
-  initialState,
-  reducers: {
-    getPosts: (state, action) => {
-      state.posts = action.payload;
-    },
-    getFollowers: (state, action) => {
-      state.followers = action.payload;
-    },
-    getPhotos: (state, action) => {
-      state.gallery = action.payload;
-    },
-    onToggleFollow(state: StateType, action) {
-      const followerId = action.payload;
+	name: "UserPost",
+	initialState,
+	reducers: {
+		getPosts: (state, action) => {
+			state.posts = action.payload;
+		},
+		getFollowers: (state, action) => {
+			state.followers = action.payload;
+		},
+		getPhotos: (state, action) => {
+			state.gallery = action.payload;
+		},
+		getUserInfo: (state, action) => {
+			state.userInfo = action.payload;
+		},
+		onToggleFollow(state: StateType, action) {
+			const followerId = action.payload;
 
-      const handleToggle = map(state.followers, (follower) => {
-        if (follower.id === followerId) {
-          return {
-            ...follower,
-            isFollowed: !follower.isFollowed,
-          };
-        }
+			const handleToggle = map(state.followers, (follower) => {
+				if (follower.id === followerId) {
+					return {
+						...follower,
+						isFollowed: !follower.isFollowed,
+					};
+				}
 
-        return follower;
-      });
+				return follower;
+			});
 
-      state.followers = handleToggle;
-    },
-  },
+			state.followers = handleToggle;
+		},
+	},
 });
 
-export const { getPosts, getFollowers, onToggleFollow, getPhotos } = UserProfileSlice.actions;
+export const {
+	getPosts,
+	getFollowers,
+	onToggleFollow,
+	getPhotos,
+	getUserInfo,
+} = UserProfileSlice.actions;
 
 export const fetchPosts = () => async (dispatch: AppDispatch) => {
-  try {
-    const response = await axios.get(`${API_URL}`);
-    dispatch(getPosts(response.data));
-  } catch (err: any) {
-    throw new Error(err);
-  }
+	try {
+		const response = await axios.get(`${API_URL}`);
+		dispatch(getPosts(response.data));
+	} catch (err: any) {
+		throw new Error(err);
+	}
 };
 export const likePosts = (postId: number) => async (dispatch: AppDispatch) => {
-  try {
-    const response = await axios.post('/api/data/posts/like', { postId });
-    dispatch(getPosts(response.data.posts));
-  } catch (err: any) {
-    throw new Error(err);
-  }
+	try {
+		const response = await axios.post("/api/data/posts/like", { postId });
+		dispatch(getPosts(response.data.posts));
+	} catch (err: any) {
+		throw new Error(err);
+	}
 };
-export const addComment = (postId: number, comment: any[]) => async (dispatch: AppDispatch) => {
-  try {
-    const response = await axios.post('/api/data/posts/comments/add', { postId, comment });
-    dispatch(getPosts(response.data.posts));
-  } catch (err: any) {
-    throw new Error(err);
-  }
-};
+export const addComment =
+	(postId: number, comment: any[]) => async (dispatch: AppDispatch) => {
+		try {
+			const response = await axios.post("/api/data/posts/comments/add", {
+				postId,
+				comment,
+			});
+			dispatch(getPosts(response.data.posts));
+		} catch (err: any) {
+			throw new Error(err);
+		}
+	};
 
 export const addReply =
-  (postId: number, commentId: any[], reply: any[]) => async (dispatch: AppDispatch) => {
-    try {
-      const response = await axios.post('/api/data/posts/replies/add', {
-        postId,
-        commentId,
-        reply,
-      });
-      dispatch(getPosts(response.data.posts));
-    } catch (err: any) {
-      throw new Error(err);
-    }
-  };
+	(postId: number, commentId: any[], reply: any[]) =>
+	async (dispatch: AppDispatch) => {
+		try {
+			const response = await axios.post("/api/data/posts/replies/add", {
+				postId,
+				commentId,
+				reply,
+			});
+			dispatch(getPosts(response.data.posts));
+		} catch (err: any) {
+			throw new Error(err);
+		}
+	};
 
 export const fetchFollwores = () => async (dispatch: AppDispatch) => {
-  try {
-    const response = await axios.get(`/api/data/users`);
-    dispatch(getFollowers(response.data));
-  } catch (err: any) {
-    throw new Error(err);
-  }
+	try {
+		const response = await axios.get(`/api/data/users`);
+		dispatch(getFollowers(response.data));
+	} catch (err: any) {
+		throw new Error(err);
+	}
 };
 
 export const fetchPhotos = () => async (dispatch: AppDispatch) => {
-  try {
-    const response = await axios.get(`/api/data/gallery`);
-    dispatch(getPhotos(response.data));
-  } catch (err: any) {
-    throw new Error(err);
-  }
+	try {
+		const response = await axios.get(`/api/data/gallery`);
+		dispatch(getPhotos(response.data));
+	} catch (err: any) {
+		throw new Error(err);
+	}
+};
+
+export const fetchUserInfo = () => async (dispatch: AppDispatch) => {
+	try {
+		const response = await axios.get(`/user/info`);
+		dispatch(getUserInfo(response.data.data));
+	} catch (err: any) {
+		throw new Error(err);
+	}
 };
 
 export default UserProfileSlice.reducer;
