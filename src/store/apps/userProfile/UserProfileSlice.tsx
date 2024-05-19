@@ -139,7 +139,7 @@ export const fetchPhotos = () => async (dispatch: AppDispatch) => {
 export const fetchUserInfo = () => async (dispatch: AppDispatch) => {
 	try {
 		const response = await axios.get(`/user/info`);
-		dispatch(getUserInfo(response.data.data));
+		dispatch(getUserInfo(response.data.data || {}));
 	} catch (err: any) {
 		throw new Error(err);
 	}
